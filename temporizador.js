@@ -1,6 +1,8 @@
 const btnInicio = document.getElementById("inicio");
 const btnPause = document.getElementById("pause");
 const btnReset = document.getElementById("reset");
+let sonidoCheck = document.getElementById("sonidoCheck");
+let animacionCheck = document.getElementById("animacionCheck");
 
 let animarBody = document.querySelector("body");
 
@@ -19,6 +21,8 @@ let rondas = 0;
 let tiempoEjercicio = 0;
 let tiempoDescanso = 0;
 let pausado = false;
+let sonidoActivado = true;
+let animacionActivada = true;
 
 // listeners de botones
 btnInicio.addEventListener("click", inicio);
@@ -42,7 +46,7 @@ if (typeof (Storage) !== "undefined") {
 
 async function inicio() {
     obtenerParametros();
-    guardarLocalStorage(rondas, tiempoEjercicio, tiempoDescanso);
+    guardarLocalStorage();
     if (pausado) reiniciaVista();
     pausado = false;
 
@@ -117,12 +121,16 @@ async function timer(tiempo, turno, ronda, rondas) {
             if (pausado) {
                 clearInterval(intervalo)
             } else {
-                if (t <= 2 && t > 0) {
-                    sonido('corto');
+                if (sonidoActivado && t <= 2 && t > 0) {
+                    sonar('corto');
                 }
                 if (t <= 0) {
-                    animar();
-                    sonido('largo');
+                    if (animacionActivada) {
+                        animar();
+                    }
+                    if (sonidoActivado) {
+                        sonar('largo');
+                    }
 
                     clearInterval(intervalo);
                     setTimeout(() => {
@@ -152,18 +160,39 @@ function cargarLocalStorage() {
     tiempoEjercicio = +localStorage.getItem('tiempoEjercicio');
     tiempoDescanso = +localStorage.getItem('tiempoDescanso');
 
+    sonidoActivado = (localStorage.getItem('sonido') === 'true');
+    animacionActivada = ((localStorage.getItem('animacion') === 'true'));
+
     if (!rondas || !tiempoEjercicio || !tiempoDescanso) {
         console.log('valores por defecto');
         valoresPorDefecto();
     }
 }
 
+// *******************************
+// *******************************
+// *******************************
+// *******************************
+// *******************************
+// *******************************
+
 // guardar en LS para cargar al inicio
 function guardarLocalStorage() {
     console.log('Guardando LS');
+    const Config = {
+        rondas: rondas,
+        tiempoEjercicio: tiempoEjercicio,
+        tiempoDescanso: tiempoDescanso,
+        sonido: sonidoActivado,
+        animacion: animacionActivada
+    }
+
+    localStorage.setItem('Config', JSON.stringify(Config));
     localStorage.setItem('rondas', rondas);
     localStorage.setItem('tiempoEjercicio', tiempoEjercicio);
     localStorage.setItem('tiempoDescanso', tiempoDescanso);
+    localStorage.setItem('sonido', sonidoActivado);
+    localStorage.setItem('animacion', animacionActivada);
 }
 
 // coloca en el formulario los valores dados
@@ -171,10 +200,16 @@ function actualizarInput() {
     entradaRondas.value = rondas;
     entradaTiempoEjercicio.value = tiempoEjercicio;
     entradaTiempoDescanso.value = tiempoDescanso;
+
+    animacionCheck.checked = animacionActivada;
+    sonidoCheck.checked = sonidoActivado;
 }
 
 // esta función obtendrá los parámetros del input y los pasará a donde corresponda (como un objeto??)
 function obtenerParametros() {
+
+    sonidoActivado = sonidoCheck.checked;
+    animacionActivada = animacionCheck.checked;
     rondas = entradaRondas.value;
     tiempoEjercicio = entradaTiempoEjercicio.value;
     tiempoDescanso = entradaTiempoDescanso.value;
@@ -227,7 +262,7 @@ function animar() {
      <div class="shake-crazy"></div> demasiado
      <div class="shake-chunk"></div> divertido */
 }
-function sonido(duración) {
+function sonar(duración) {
     const bipCorto = new Audio('./bip2.mp3');
     const bipLargo = new Audio('./bip3.mp3')
 
