@@ -287,4 +287,6 @@ function valoresPorDefecto() {
     tiempoEjercicio = 5;
     tiempoDescanso = 5;
     pausado = false;
+    sonidoActivado = true;
+    animacionActivada = true;
 }
